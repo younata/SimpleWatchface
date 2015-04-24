@@ -1,0 +1,44 @@
+{
+    "appKeys": {
+        "KEY_CONDITIONS": 1,
+        "KEY_TEMPERATURE": 0
+    },
+    "capabilities": [
+        "location"
+    ],
+    "companyName": "Rachel Brindle",
+    "longName": "Tutorial",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "fonts/HelveticaNeue Light.ttf",
+                "name": "HELVETICA_NEUE_LIGHT_36",
+                "type": "font"
+            },
+            {
+                "file": "fonts/HelveticaNeue Light.ttf",
+                "name": "HELVETICA_NEUE_LIGHT_18",
+                "type": "font"
+            },
+            {
+                "file": "fonts/xkcd.ttf",
+                "name": "XKCD_48",
+                "type": "font"
+            },
+            {
+                "file": "fonts/xkcd.ttf",
+                "name": "XKCD_24",
+                "type": "font"
+            }
+        ]
+    },
+    "sdkVersion": "2",
+    "shortName": "Tutorial",
+    "uuid": "36109934-ff51-4842-b1a9-e8f58cde70c6",
+    "versionCode": 1,
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
