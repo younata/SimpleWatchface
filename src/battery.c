@@ -6,17 +6,17 @@ static TextLayer *battery_layer;
 static void battery_handler(BatteryChargeState charge);
 
 void battery_startup(Window *window, GFont font) {
-  battery_state_service_subscribe(battery_handler);
-
   battery_layer = text_layer_create(GRect(0, 105, 120, 24));
   text_layer_set_background_color(battery_layer, GColorClear);
   text_layer_set_text_color(battery_layer, GColorWhite);
   text_layer_set_text_alignment(battery_layer, GTextAlignmentRight);
 
   text_layer_set_font(battery_layer, font);
+  layer_add_child(window_get_root_layer(window), text_layer_get_layer(battery_layer));
+  
+  battery_state_service_subscribe(battery_handler);
   battery_handler(battery_state_service_peek());
 
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(battery_layer));
 }
 
 void battery_teardown() {
