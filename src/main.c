@@ -22,7 +22,7 @@ static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResul
 static void outbox_sent_callback(DictionaryIterator *iterator, void *context);
 
 static void main_window_load(Window *window) {
-  // Create time TextLayer
+  // Set up the time layer
   time_layer = text_layer_create(GRect(0, 25, 144, 50));
   text_layer_set_background_color(time_layer, GColorClear);
   text_layer_set_text_color(time_layer, GColorWhite);
@@ -32,6 +32,7 @@ static void main_window_load(Window *window) {
   header_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_NEUE_LIGHT_36));
   text_layer_set_font(time_layer, header_font);
   
+  // Set up the date layer
   date_layer = text_layer_create(GRect(0, 65, 144, 20));
   text_layer_set_background_color(date_layer, GColorClear);
   text_layer_set_text_color(date_layer, GColorWhite);
@@ -40,7 +41,7 @@ static void main_window_load(Window *window) {
   subheader_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_NEUE_LIGHT_18));
   text_layer_set_font(date_layer, subheader_font);
   
-  // Set up the weatherlayer
+  // Set up the weather layer
   weather_layer = text_layer_create(GRect(0, 85, 144, 20));
   text_layer_set_background_color(weather_layer, GColorClear);
   text_layer_set_text_color(weather_layer, GColorWhite);
@@ -48,7 +49,8 @@ static void main_window_load(Window *window) {
   
   text_layer_set_font(weather_layer, subheader_font);
 
-  battery_layer = text_layer_create(GRect(0, 105, 120, 20));
+  // Set up the battery layer
+  battery_layer = text_layer_create(GRect(0, 105, 120, 24));
   text_layer_set_background_color(battery_layer, GColorClear);
   text_layer_set_text_color(battery_layer, GColorWhite);
   text_layer_set_text_alignment(battery_layer, GTextAlignmentRight);
@@ -97,6 +99,16 @@ static void battery_handler(BatteryChargeState charge) {
   } else {
     snprintf(battery_buffer, sizeof(battery_buffer), "%d%%", charge.charge_percent);
   }
+
+  #ifdef PBL_COLOR
+    if (charge.is_plugged) {
+      GColor color = charge.charge_percent == 100 ? GColorGreen : GColorCyan;
+      text_layer_set_text_color(battery_layer, color);
+    } else {
+      GColor color = charge.charge_percent <= 20 ? GColorRed : GColorGreen;
+      text_layer_set_text_color(battery_layer, color);
+    }
+  #endif
 
   text_layer_set_text(battery_layer, battery_buffer);
 }
