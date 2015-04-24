@@ -1,21 +1,21 @@
 #include <pebble.h>
   
+#include "battery.h"
+  
 static Window *main_window;
 static TextLayer *time_layer;
 static TextLayer *date_layer;
 static TextLayer *weather_layer;
-static TextLayer *battery_layer;
 
 static GFont header_font;
 static GFont subheader_font;
 
 enum {
   KEY_TEMPERATURE = 0,
-  KEY_CONDITIONS = 1
+  KEY_CONDITIONS = 1,
 };
 
 static void update_time();
-static void battery_handler(BatteryChargeState charge);
 static void inbox_dropped_callback(AppMessageResult reason, void *context);
 static void inbox_received_callback(DictionaryIterator *iterator, void *context);
 static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context);
@@ -49,20 +49,12 @@ static void main_window_load(Window *window) {
   
   text_layer_set_font(weather_layer, subheader_font);
 
-  // Set up the battery layer
-  battery_layer = text_layer_create(GRect(0, 105, 120, 24));
-  text_layer_set_background_color(battery_layer, GColorClear);
-  text_layer_set_text_color(battery_layer, GColorWhite);
-  text_layer_set_text_alignment(battery_layer, GTextAlignmentRight);
-
-  text_layer_set_font(battery_layer, subheader_font);
-  battery_handler(battery_state_service_peek());
+  battery_startup(window, subheader_font);
 
   // Add it as a child layer to the Window's root layer
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(time_layer));
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(date_layer));
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(weather_layer));
-  layer_add_child(window_get_root_layer(window), text_layer_get_layer(battery_layer));
 
   app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 }
@@ -76,41 +68,11 @@ static void main_window_unload(Window *window) {
   text_layer_destroy(weather_layer);
   fonts_unload_custom_font(subheader_font);
 
-  text_layer_destroy(battery_layer);
+  battery_teardown();
 }
 
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
-}
-
-static void battery_handler(BatteryChargeState charge) {
-  static char battery_buffer[15];
-  
-  if (charge.is_plugged) {
-    if (charge.is_charging) {
-      if (charge.charge_percent == 100) {
-        strncpy(battery_buffer, "Charged", sizeof(battery_buffer));
-      } else {
-        strncpy(battery_buffer, "Charging", sizeof(battery_buffer));
-      }
-    } else {
-      strncpy(battery_buffer, "Not Charging", sizeof(battery_buffer));
-    }
-  } else {
-    snprintf(battery_buffer, sizeof(battery_buffer), "%d%%", charge.charge_percent);
-  }
-
-  #ifdef PBL_COLOR
-    if (charge.is_plugged) {
-      GColor color = charge.charge_percent == 100 ? GColorGreen : GColorCyan;
-      text_layer_set_text_color(battery_layer, color);
-    } else {
-      GColor color = charge.charge_percent <= 20 ? GColorRed : GColorGreen;
-      text_layer_set_text_color(battery_layer, color);
-    }
-  #endif
-
-  text_layer_set_text(battery_layer, battery_buffer);
 }
 
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
@@ -205,7 +167,6 @@ static void init() {
   // Show the Window on the watch, with animated=true
   window_stack_push(main_window, true);
   tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
-  battery_state_service_subscribe(battery_handler);
 
   app_message_register_inbox_received(inbox_received_callback);
   app_message_register_inbox_dropped(inbox_dropped_callback);
@@ -220,7 +181,6 @@ static void deinit() {
 
   app_message_deregister_callbacks();
   tick_timer_service_unsubscribe();
-  battery_state_service_unsubscribe();
 }
 
 int main(int argc, char *argv[]) {

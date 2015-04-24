@@ -18,7 +18,7 @@ function locationSuccess(position) {
       var temperature = ((9.0 / 5.0) * Math.round(json.main.temp - 273.15)) + 32;
 
       // Conditions
-      var conditions = json.weather[0].main;      
+      var conditions = json.weather[0].main;
       
       var dictionary = {
         'KEY_TEMPERATURE': temperature,
