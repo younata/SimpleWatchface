@@ -2,11 +2,14 @@
 #include "battery.h"
 
 static TextLayer *battery_layer;
+static Layer *charge_layer;
 
 static void battery_handler(BatteryChargeState charge);
+GColor color_from_battery_state(BatteryChargeState state);
+static void battery_layer_draw(Layer *layer, GContext *ctx);
 
 void battery_startup(Window *window, GFont font) {
-  battery_layer = text_layer_create(GRect(0, 105, 120, 24));
+  battery_layer = text_layer_create(GRect(0, 5, 115, 15));
   text_layer_set_background_color(battery_layer, GColorClear);
   text_layer_set_text_color(battery_layer, GColorWhite);
   text_layer_set_text_alignment(battery_layer, GTextAlignmentRight);
@@ -17,10 +20,14 @@ void battery_startup(Window *window, GFont font) {
   battery_state_service_subscribe(battery_handler);
   battery_handler(battery_state_service_peek());
 
+  charge_layer = layer_create(GRect(119, 8, 20, 10));
+  layer_set_update_proc(charge_layer, battery_layer_draw);
+  layer_add_child(window_get_root_layer(window), charge_layer);
 }
 
 void battery_teardown() {
   text_layer_destroy(battery_layer);
+  layer_destroy(charge_layer);
 
   battery_state_service_unsubscribe();
 }
@@ -35,19 +42,56 @@ static void battery_handler(BatteryChargeState charge) {
       } else {
         strncpy(battery_buffer, "Charging", sizeof(battery_buffer));
       }
-      #ifdef PBL_COLOR
-        GColor color = charge.charge_percent == 100 ? GColorGreen : GColorCyan;
-        text_layer_set_text_color(battery_layer, color);
-      #endif
     } else {
       strncpy(battery_buffer, "Not Charging", sizeof(battery_buffer));
     }
   } else {
     snprintf(battery_buffer, sizeof(battery_buffer), "%d%%", charge.charge_percent);
-    #ifdef PBL_COLOR
-      GColor color = charge.charge_percent <= 20 ? GColorRed : GColorGreen;
-      text_layer_set_text_color(battery_layer, color);
-    #endif
   }
+  text_layer_set_text_color(battery_layer, color_from_battery_state(charge));
   text_layer_set_text(battery_layer, battery_buffer);
+}
+
+GColor color_from_battery_state(BatteryChargeState state) {
+  #ifdef PBL_COLOR
+    GColor color = GColorGreen;
+    if (state.charge_percent <= 20) {
+      color = GColorRed;
+    } else if (state.is_plugged && !state.is_charging) {
+      color = GColorCyan;
+    }
+    return color;
+  #else
+    return GColorWhite;
+  #endif
+}
+
+static void battery_layer_draw(Layer *layer, GContext *ctx) {
+  GRect bounds = layer_get_bounds(layer);
+
+  BatteryChargeState battery_state = battery_state_service_peek();
+
+  uint8_t stroke_width = 1;
+  uint8_t stroke_width2 = stroke_width + 1;
+
+  GColor color = color_from_battery_state(battery_state);
+  
+  graphics_context_set_stroke_color(ctx, color);
+  #ifdef PBL_COLOR
+    graphics_context_set_stroke_width(ctx, stroke_width);
+  #else
+    GRect inner = bounds;
+    for (int i = 0; i < stroke_width - 1; i++) {
+      inner = grect_crop(inner, 1);
+      graphics_draw_rect(ctx, inner);
+    }
+  #endif
+  graphics_draw_rect(ctx, bounds);
+
+  GRect battery = GRect(stroke_width2,
+                        stroke_width2,
+                        ((bounds.size.w - (2 * stroke_width2)) * ((float)battery_state.charge_percent / 100.0)),
+                        bounds.size.h - (2 * stroke_width2));
+  graphics_context_set_fill_color(ctx, color);
+  graphics_fill_rect(ctx, battery, 0, GCornerNone);
 }

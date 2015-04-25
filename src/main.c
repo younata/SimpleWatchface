@@ -8,20 +8,23 @@ static Window *main_window;
 
 static GFont header_font;
 static GFont subheader_font;
+static GFont small_font;
 
 static void main_window_load(Window *window) {
   // Create fonts
   header_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_NEUE_LIGHT_36));
   subheader_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_NEUE_LIGHT_18));
+  small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_NEUE_LIGHT_12));
   
   date_startup(window, header_font, subheader_font);
   weather_startup(window, subheader_font);
-  battery_startup(window, subheader_font);
+  battery_startup(window, small_font);
 }
 
 static void main_window_unload(Window *window) {
   fonts_unload_custom_font(header_font);
   fonts_unload_custom_font(subheader_font);
+  fonts_unload_custom_font(small_font);
 
   date_teardown();
   weather_teardown();

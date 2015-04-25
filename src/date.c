@@ -1,10 +1,11 @@
 #include <pebble.h>
 #include "date.h"
+#include "weather.h"
 
 static TextLayer *time_layer;
 static TextLayer *date_layer;
 
-static void update_time();
+void update_time();
 static void tick_handler(struct tm *tick_time, TimeUnits units_changed);
 
 void date_startup(Window *window, GFont time_font, GFont date_font) {
@@ -37,22 +38,14 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_time();
 }
 
-static void update_time() {
+void update_time() {
   // Get a tm structure
   time_t temp = time(NULL); 
   struct tm *tick_time = localtime(&temp);
   
   // Get weather update every 30 minutes
   if(tick_time->tm_min % 30 == 0) {
-    // Begin dictionary
-    DictionaryIterator *iter;
-    app_message_outbox_begin(&iter);
-
-    // Add a key-value pair
-    dict_write_uint8(iter, 0, 0);
-
-    // Send the message!
-    app_message_outbox_send();
+    weather_askForUpdate();
   }
 
   // Create a long-lived buffer
