@@ -1,7 +1,15 @@
-var xhrRequest = function (url, type, callback) {
+var xhrRequest = function (url, type, tries, callback) {
   var xhr = new XMLHttpRequest();
   xhr.onload = function () {
-    callback(this.responseText);
+    if (xhr.status == 200) {
+      callback(this.responseText); 
+    } else {
+      console.log('Error requesting weather: ' + this.responseText);
+      if (tries != 0) {
+        console.log('Trying again with ' + tries + ' tries left');
+        xhrRequest(url, type, tries - 1, callback);
+      }
+    }
   };
   xhr.open(type, url);
   xhr.send();
@@ -11,7 +19,7 @@ function locationSuccess(position) {
   var url = 'http://api.openweathermap.org/data/2.5/weather?lat=' + 
       position.coords.latitude + '&lon=' + position.coords.longitude;
   
-  xhrRequest(url, 'GET', 
+  xhrRequest(url, 'GET', 2, 
     function(responseText) {
       var json = JSON.parse(responseText);
 
@@ -31,7 +39,7 @@ function locationSuccess(position) {
 }
 
 function locationError(error) {
-  console.log('Error requesting location!' + error);
+  console.log('Error requesting location: ' + error);
 }
 
 function getWeather() {

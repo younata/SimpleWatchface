@@ -44,7 +44,7 @@ void update_time() {
   struct tm *tick_time = localtime(&temp);
   
   // Get weather update every 30 minutes
-  if(tick_time->tm_min % 30 == 0) {
+  if(tick_time->tm_min % 30 == 0 && tick_time->tm_sec == 0) {
     weather_askForUpdate();
   }
 

@@ -55,6 +55,8 @@ void weather_askForUpdate() {
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
 
+  APP_LOG(APP_LOG_LEVEL_INFO, "Asking for weather update");
+
   // Add a key-value pair
   dict_write_uint8(iter, 0, 0);
 

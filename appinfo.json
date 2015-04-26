@@ -13,7 +13,7 @@
         "media": [
             {
                 "file": "fonts/HelveticaNeue Light.ttf",
-                "name": "HELVETICA_NEUE_LIGHT_12",
+                "name": "HELVETICA_NEUE_LIGHT_36",
                 "type": "font"
             },
             {
@@ -23,7 +23,7 @@
             },
             {
                 "file": "fonts/HelveticaNeue Light.ttf",
-                "name": "HELVETICA_NEUE_LIGHT_36",
+                "name": "HELVETICA_NEUE_LIGHT_12",
                 "type": "font"
             }
         ]
