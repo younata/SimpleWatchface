@@ -50,6 +50,7 @@ static void battery_handler(BatteryChargeState charge) {
   }
   text_layer_set_text_color(battery_layer, color_from_battery_state(charge));
   text_layer_set_text(battery_layer, battery_buffer);
+  layer_mark_dirty(charge_layer);
 }
 
 GColor color_from_battery_state(BatteryChargeState state) {
