@@ -16,9 +16,15 @@ static void main_window_load(Window *window) {
   subheader_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_NEUE_LIGHT_18));
   small_font = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_HELVETICA_NEUE_LIGHT_12));
   
-  date_startup(window, header_font, subheader_font);
-  weather_startup(window, subheader_font);
-  battery_startup(window, small_font);
+  if (header_font != NULL && subheader_font != NULL) {
+    date_startup(window, header_font, subheader_font);
+  }
+  if (subheader_font != NULL && small_font != NULL) {
+    weather_startup(window, subheader_font, small_font);
+  }
+  if (small_font != NULL) {
+    battery_startup(window, small_font);
+  }
 }
 
 static void main_window_unload(Window *window) {
@@ -33,15 +39,17 @@ static void main_window_unload(Window *window) {
 
 static void init() {
   main_window = window_create();
+  if (main_window != NULL) {
   
-  window_set_background_color(main_window, GColorBlack);
+    window_set_background_color(main_window, GColorBlack);
 
-  window_set_window_handlers(main_window, (WindowHandlers) {
-    .load = main_window_load,
-    .unload = main_window_unload
-  });
+    window_set_window_handlers(main_window, (WindowHandlers) {
+      .load = main_window_load,
+      .unload = main_window_unload
+    });
 
-  window_stack_push(main_window, true);
+    window_stack_push(main_window, true);
+  }
 }
 
 static void deinit() {
@@ -50,6 +58,10 @@ static void deinit() {
 
 int main(int argc, char *argv[]) {
   init();
-  app_event_loop();
-  deinit();
+  if (main_window != NULL) {
+    app_event_loop();
+    deinit();
+  } else {
+    return 1;
+  }
 }

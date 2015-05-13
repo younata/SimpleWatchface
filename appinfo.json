@@ -13,7 +13,12 @@
         "media": [
             {
                 "file": "fonts/HelveticaNeue Light.ttf",
-                "name": "HELVETICA_NEUE_LIGHT_36",
+                "name": "HELVETICA_NEUE_LIGHT_8",
+                "type": "font"
+            },
+            {
+                "file": "fonts/HelveticaNeue Light.ttf",
+                "name": "HELVETICA_NEUE_LIGHT_12",
                 "type": "font"
             },
             {
@@ -23,7 +28,7 @@
             },
             {
                 "file": "fonts/HelveticaNeue Light.ttf",
-                "name": "HELVETICA_NEUE_LIGHT_12",
+                "name": "HELVETICA_NEUE_LIGHT_36",
                 "type": "font"
             }
         ]
@@ -35,7 +40,6 @@
         "basalt"
     ],
     "uuid": "36109934-ff51-4842-b1a9-e8f58cde70c6",
-    "versionCode": 1,
     "versionLabel": "1.0",
     "watchapp": {
         "watchface": true
