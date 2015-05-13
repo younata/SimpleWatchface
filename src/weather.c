@@ -37,6 +37,8 @@ void weather_startup(Window *window, GFont weather_font, GFont status_font) {
     text_layer_set_text_alignment(weather_layer, GTextAlignmentCenter);
     text_layer_set_font(weather_layer, weather_font);
     layer_add_child(window_get_root_layer(window), text_layer_get_layer(weather_layer));
+  } else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Unable to create weather_layer");
   }
 
   status_layer = text_layer_create(GRect(0, 105, 144, 20));
@@ -46,6 +48,8 @@ void weather_startup(Window *window, GFont weather_font, GFont status_font) {
     text_layer_set_text_alignment(status_layer, GTextAlignmentCenter);
     text_layer_set_font(status_layer, status_font);
     layer_add_child(window_get_root_layer(window), text_layer_get_layer(status_layer));
+  } else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Unable to create status_layer");
   }
 
   app_message_register_inbox_received(inbox_received_callback);
@@ -77,8 +81,8 @@ void weather_teardown() {
   app_message_deregister_callbacks();
 }
 
-void weather_on_minute(struct tm *now) {
-  if(now->tm_min % 30 == 0) {
+void weather_update(struct tm *now) {
+  if(now->tm_min % 30 == 0 && now->tm_sec) {
     weather_askForUpdate();
   }
   update_status_layer_text();
@@ -89,8 +93,6 @@ void weather_askForUpdate() {
   // Begin dictionary
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
-
-  APP_LOG(APP_LOG_LEVEL_INFO, "Asking for weather update");
 
   // Add a key-value pair
   dict_write_uint8(iter, 0, 0);
@@ -110,7 +112,13 @@ static void update_weather_layer_text(int temperature, char *conditions) {
 
 static void update_status_layer_text() {
   if (last_check == 0 || status_layer == NULL) { return; }
-  time_t time_difference_in_minutes = abs(time(NULL) - last_check) / 60;
+  time_t time_difference = abs(time(NULL) - last_check);
+  int seconds = time_difference % 60;
+  const char *text = text_layer_get_text(status_layer);
+  if (seconds != 0 && (text == NULL || strlen(text_layer_get_text(status_layer)) != 0)) {
+    return;
+  }
+  time_t time_difference_in_minutes = time_difference / 60;
   int minutes = time_difference_in_minutes % 60;
   int hours = time_difference_in_minutes / 60;
 
@@ -185,15 +193,12 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 }
 
 static void inbox_dropped_callback(AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Message dropped!");
   set_status_error("Error receiving update");
 }
 
 static void outbox_failed_callback(DictionaryIterator *iterator, AppMessageResult reason, void *context) {
-  APP_LOG(APP_LOG_LEVEL_ERROR, "Outbox send failed!");
   set_status_error("Error requesting update");
 }
 
 static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
-  APP_LOG(APP_LOG_LEVEL_INFO, "Outbox send success!");
 }

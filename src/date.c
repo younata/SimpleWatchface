@@ -18,6 +18,8 @@ void date_startup(Window *window, GFont time_font, GFont date_font) {
     text_layer_set_text_alignment(time_layer, GTextAlignmentCenter);
     text_layer_set_font(time_layer, time_font);
     layer_add_child(window_get_root_layer(window), text_layer_get_layer(time_layer));
+  } else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Unable to create time_layer");
   }
 
   date_layer = text_layer_create(GRect(0, 65, 144, 20));
@@ -27,6 +29,8 @@ void date_startup(Window *window, GFont time_font, GFont date_font) {
     text_layer_set_text_alignment(date_layer, GTextAlignmentCenter);
     text_layer_set_font(date_layer, date_font);
     layer_add_child(window_get_root_layer(window), text_layer_get_layer(date_layer));
+  } else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Unable to create date_layer");
   }
 
   tick_timer_service_subscribe(SECOND_UNIT, tick_handler);
@@ -55,9 +59,7 @@ void update_time() {
   time_t temp = time(NULL); 
   struct tm *tick_time = localtime(&temp);
   
-  if(tick_time->tm_sec == 0) {
-    weather_on_minute(tick_time);
-  }
+  weather_update(tick_time);
 
   // Create a long-lived buffer
   static char time_buffer[] = "00:00:00";

@@ -16,12 +16,16 @@ void battery_startup(Window *window, GFont font) {
     text_layer_set_text_alignment(battery_layer, GTextAlignmentRight);
     text_layer_set_font(battery_layer, font);
     layer_add_child(window_get_root_layer(window), text_layer_get_layer(battery_layer));
+  } else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Unable to create battery_layer");
   }
 
   charge_layer = layer_create(GRect(119, 8, 20, 10));
   if (charge_layer != NULL) {
     layer_set_update_proc(charge_layer, battery_layer_draw);
     layer_add_child(window_get_root_layer(window), charge_layer);
+  } else {
+      APP_LOG(APP_LOG_LEVEL_ERROR, "Unable to create charge_layer");
   }
   
   battery_state_service_subscribe(battery_handler);
